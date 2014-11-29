@@ -23,10 +23,6 @@ ASN 3
 Implements a simple non-recursive ray tracer.  Can only trace planes and spheres.  Planes must be z=0 (so, you can only really have one plane. May only have one point light.
 Issue: The way I've handled transforms and intersections in this program is incorrect.  I manually calculate the intersection insead of using the inverse of the object's transform matrix.
 
-ASN 3 Fixed
------------
-Fixes the transform issue from ASN 3.  It gets its own directory so that ASN 3 can reflect what I ended up submitting.
-
 ASN 4
 -----
 An extension of ASN 3.
