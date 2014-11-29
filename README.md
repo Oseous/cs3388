@@ -15,8 +15,8 @@ I use it to produce squares that bounce around in a 2D viewport.
 ASN 2
 -----
 This consists of two programs:
-  1 - Reads in a profile and sweep parameters from a text file and writes the resulting mesh to another text file.
-  2 - Takes in the mesh from the text file and draws the wiremesh in 3D using camera transforms and the like.
+  Mesher - Reads in a profile and sweep parameters from a text file and writes the resulting mesh to another text file.
+  Renderer - Takes in the mesh from the text file and draws the wiremesh in 3D using camera transforms and the like.
   
 ASN 3
 -----
