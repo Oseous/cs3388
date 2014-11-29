@@ -114,7 +114,7 @@ public:
 	static bool addObject(std::vector<GenericObject*> &objects);
 
   /*
-   setupNewObject(...)
+   removeObject(...)
 
     Removes an object from the scene.
     Handles user input and deleting the object.
