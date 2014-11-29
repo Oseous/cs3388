@@ -95,7 +95,7 @@ public:
   static bool modifyLighting(Light &light);
 
   /*
-    setupNewObject(...)
+    addObject(...)
 
     Adds a new object to the scene.
     Handles user input and initializing the new object.
