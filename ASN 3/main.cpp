@@ -37,7 +37,7 @@
 #define PI ((float)3.14159265358979323846)
 #define WIDTH (640)
 #define HEIGHT (480)
-#define VIEWING_ANGLE 45.0
+#define VIEWING_ANGLE (float)45.0
 #define N 5.0
 //#define F 25.0f
 
