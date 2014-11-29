@@ -16,6 +16,7 @@
 
 #include "Sphere.h"
 #include "RenderUtils.h"
+
 Sphere::Sphere()
 {
   // Default radius: 1

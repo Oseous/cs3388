@@ -21,7 +21,6 @@
 #include "TextUI.h"
 #include "InputParser.h"
 
-
 #include "Plane.h"
 #include "Sphere.h"
 
