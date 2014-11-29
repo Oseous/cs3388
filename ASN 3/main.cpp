@@ -46,6 +46,7 @@ using namespace cv;
 
 #define DEBUG
 
+// Just initializes all of the objects to the desired default scene
 void setupDefaultScene(vector<GenericObject*> &objects, Camera &cam, Scalar &backColour, Light &light);
 
 int main(int argc, char **argv)
