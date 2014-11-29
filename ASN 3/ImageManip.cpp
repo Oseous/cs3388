@@ -57,9 +57,9 @@ void ImageManip::plot(cv::Mat image, int x, int y, cv::Scalar colour, bool newIm
       colour[i] = 255;
 
   // Write
-	ptr[idx++] = colour[0];
-	ptr[idx++] = colour[1];
-	ptr[idx] = colour[2];
+	ptr[idx++] = (uchar)colour[0];
+	ptr[idx++] = (uchar)colour[1];
+	ptr[idx] = (uchar)colour[2];
 
 	return;
 }

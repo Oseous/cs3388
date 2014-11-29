@@ -26,9 +26,7 @@
 class Plane : public GenericObject
 {
 private:
-  // The height of the plane.
-  // Always 0 for now.
-  float _z;
+
 public:
   /*
     Plane()
@@ -44,10 +42,12 @@ public:
     An extra constructor that allows planes of different colours to be created easily.
 
     args:
+      cv::Mat trans:
+        Transform to apply to the plane.
       cv::Scalar rho_a, rho_d, rho_s:
         The ambient, diffuse, and specular lighting factors of the new plane.
   */
-  Plane(cv::Scalar rho_a, cv::Scalar rho_d, cv::Scalar rho_s);
+  Plane(cv::Mat trans, cv::Scalar rho_a, cv::Scalar rho_d, cv::Scalar rho_s);
 
   /*
   ~Plane()

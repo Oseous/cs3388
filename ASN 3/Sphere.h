@@ -22,10 +22,7 @@
 class Sphere : public GenericObject
 {
 private:
-  // The radius of the sphere
-  float _radius;
-  // The location of the centre of the sphere
-  cv::Mat _location;
+
 public:
   /*
     Sphere()
@@ -43,16 +40,13 @@ public:
     specific sphere to be initialized easily.
 
     Args:
-      float x,y,z:
-        The centre location of the new sphere.
-      float radius:
-        The radius of the new sphere.
-      cv::Scalar rho_a, rho_d, rho_d
+      cv::Mat trans:
+        The transform to apply to the sphere.
+      cv::Scalar rho_a, rho_d, rho_d:
         The ambient, diffuse, and specular lighting 
         factors of the new sphere.
   */
-  Sphere(float x, float y, float z, float radius, cv::Scalar rho_a, 
-      cv::Scalar rho_d, cv::Scalar rho_s);
+  Sphere(cv::Mat trans, cv::Scalar rho_a, cv::Scalar rho_d, cv::Scalar rho_s);
   
   /*
     ~Sphere()

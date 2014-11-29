@@ -19,24 +19,18 @@
 Sphere::Sphere()
 {
   // Default radius: 1
-  _radius = 1.0f;
   // Default location: origin
-  _location = cv::Mat::zeros(4, 1, CV_32FC1);
-  _location.at<float>(3) = 1.0f;
+  transformSet(cv::Mat::eye(4, 4, CV_32FC1));
+
   //Default colour: light gray
   rho_a = cv::Scalar(0, 0, 0);
   rho_d = cv::Scalar(1, 1, 1);
   rho_s = cv::Scalar(0, 0, 0);
 }
 
-Sphere::Sphere(float x, float y, float z, float radius, cv::Scalar rho_a, cv::Scalar rho_d, cv::Scalar rho_s)
+Sphere::Sphere(cv::Mat trans, cv::Scalar rho_a, cv::Scalar rho_d, cv::Scalar rho_s)
 {
-  _radius = radius;
-  _location = cv::Mat::zeros(4, 1, CV_32FC1);
-  _location.at<float>(0) = x;
-  _location.at<float>(1) = y;
-  _location.at<float>(2) = z;
-  _location.at<float>(3) = 1.0f;
+  transformSet(trans);  // Handles setting the inverse matrix too
   this->rho_a = rho_a;
   this->rho_d = rho_d;
   this->rho_s = rho_s;
@@ -49,11 +43,14 @@ Sphere::~Sphere()
 
 bool Sphere::intersect(cv::Mat e, cv::Mat d, float &dist)
 {
+  // Act as if the sphere is at the origin, and transform e & d
+  cv::Mat ep = _Mi*e;
+  cv::Mat dp = _Mi*d;
+
   // Check if there is an intersection
-  // TODO: Don't assume the sphere is at the origin!!!
-  float a = RenderUtils::homoMagSq(d);
-  float b = 2 * RenderUtils::homoDot(d, (e - _location));
-  float c = (RenderUtils::homoMagSq(e - _location) - pow(_radius, 2));
+  float a = RenderUtils::homoMagSq(dp);
+  float b = 2 * RenderUtils::homoDot(dp, ep);
+  float c = RenderUtils::homoMagSq(ep) - 1;
 
   // Calculate determinant
   float det = pow(b, 2) - 4 * a * c;
@@ -94,8 +91,18 @@ bool Sphere::intersect(cv::Mat e, cv::Mat d, float &dist)
 
 cv::Mat Sphere::normal(cv::Mat point)
 {
-  cv::Mat norm = RenderUtils::homoNormalize(point - _location);
-  norm.at<float>(3) = 0; // Vector
+  // Inverse transform the point to be on our unit sphere
+  cv::Mat pointp = _Mi*point;
+
+  // Normal is just the vector to the point
+  cv::Mat norm;
+  pointp.copyTo(norm);
+
+  // Vector - do not translate!
+  norm.at<float>(3) = 0;
+  // Transform the normal into the world space
+  norm = _M*norm;
+  RenderUtils::homoNormalize(norm);
 
   return norm;
 }

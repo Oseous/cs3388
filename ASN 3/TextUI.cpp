@@ -120,8 +120,9 @@ bool TextUI::addObject(std::vector<GenericObject*> &objects){
         return false;
     }
     // Make the plane
+    cv::Mat trans = cv::Mat::eye(4, 4, CV_32FC1); // Just make a base plane...
     cv::Scalar rho_a(co[0], co[1], co[2]), rho_d(co[3], co[4], co[5]), rho_s(co[6], co[7], co[8]);
-    Plane *newPlane = new Plane(rho_a, rho_d, rho_s);
+    Plane *newPlane = new Plane(trans, rho_a, rho_d, rho_s);
     newPlane->name = name;
 
     // Add to the list of objects
@@ -154,8 +155,15 @@ bool TextUI::addObject(std::vector<GenericObject*> &objects){
         return false;
     }
     // Make the plane
+    cv::Mat trans = cv::Mat::eye(4, 4, CV_32FC1);
+    trans.at<float>(0, 0) = rad;
+    trans.at<float>(1, 1) = rad;
+    trans.at<float>(2, 2) = rad;
+    trans.at<float>(0, 3) = coord[0];
+    trans.at<float>(1, 3) = coord[1];
+    trans.at<float>(2, 3) = coord[2];
     cv::Scalar rho_a(co[0], co[1], co[2]), rho_d(co[3], co[4], co[5]), rho_s(co[6], co[7], co[8]);
-    Sphere *newSphere = new Sphere(coord[0], coord[1], coord[2], rad, rho_a, rho_d, rho_s);
+    Sphere *newSphere = new Sphere(trans, rho_a, rho_d, rho_s);
     newSphere->name = name;
 
     // Add to the list of objects

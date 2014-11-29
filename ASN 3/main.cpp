@@ -34,9 +34,9 @@
 
 #include "TextUI.h"
 
-#define PI 3.14159265358979323846
-#define WIDTH 640
-#define HEIGHT 480
+#define PI ((float)3.14159265358979323846)
+#define WIDTH (640)
+#define HEIGHT (480)
 #define VIEWING_ANGLE 45.0
 #define N 5.0
 //#define F 25.0f
@@ -45,6 +45,8 @@ using namespace std;
 using namespace cv;
 
 #define DEBUG
+
+void setupDefaultScene(vector<GenericObject*> &objects, Camera &cam, Scalar &backColour, Light &light);
 
 int main(int argc, char **argv)
 {
@@ -59,54 +61,14 @@ int main(int argc, char **argv)
   const float H = N*tan(PI*VIEWING_ANGLE / 360);
   const float W = H*AR;
 
-  // Background colour
-  Scalar backColour = Scalar(30, 30, 30);
+  // Declare colour
+  Scalar backColour;
   
-  // Initialize light
+  // Declare light
   Light light;
-  light.centre = Mat::ones(4, 1, CV_32FC1);
-  light.centre = light.centre * 5;
-  light.centre.at<float>(0) = -light.centre.at<float>(0);
-  light.centre.at<float>(3) = 0;
-  light.intensity = Scalar(1, 1, 1); // White light
-  light.ambientIntensity = Scalar(0.22, 0.22, 0.22);
 
-  // Insert the default objects
-  Scalar rho_ad(0.25, 0.25, 0.5), rho_s(0.333, 0.333, 0.333);
-  Sphere *defaultSphere = new Sphere(0.0f, 0.0f, 0.6f, 1.0f, rho_ad, rho_ad, rho_s);
-  defaultSphere->name = "Default red sphere";
-  objects.push_back(defaultSphere);
-  rho_ad = Scalar(0.5, 0.25, 0.25);
-  rho_s = Scalar(0.45, 0.25, 0.25);
-  Sphere *sphere2 = new Sphere(1.0f, -1.0f, 1.0f, 0.25f, rho_ad, rho_ad, rho_s);
-  sphere2->name = "Default blue sphere";
-  objects.push_back(sphere2);
-
-  // Add a gray plane
-  rho_ad = Scalar(0.333, 0.333, 0.333);
-  rho_s = Scalar(0.333, 0.333, 0.333);
-  Plane *defaultPlane = new Plane(rho_ad, rho_ad, rho_s);
-  defaultPlane->name = "Defualt plane";
-  objects.push_back(defaultPlane);
-
-  // Initialize camera
-  // Camera position
-  cam.e = Mat::ones(4, 1, CV_32FC1);
-  cam.e.at<float>(0) = 5;
-  cam.e.at<float>(1) = 5;
-  cam.e.at<float>(2) = 5;
-  // Gaze point
-  cam.g = Mat::zeros(4, 1, CV_32FC1);
-  cam.g.at<float>(2) = 0;
-  cam.g.at<float>(3) = 1;
-  // Up vector
-  Mat p = Mat::zeros(4, 1, CV_32FC1);
-  p.at<float>(2) = 1;
-  p.at<float>(3) = 1;
-  // Camera's m, u, and v vectors
-  cam.n = RenderUtils::homoNormalize(cam.e - cam.g);
-  cam.u = RenderUtils::homoNormalize(RenderUtils::homoCross(p, cam.n));
-  cam.v = RenderUtils::homoNormalize(RenderUtils::homoCross(cam.n, cam.u));
+  // Setup function
+  setupDefaultScene(objects, cam, backColour, light);
 
   // Allocate the image to draw to
   namedWindow("Render Window", WINDOW_AUTOSIZE);
@@ -162,42 +124,42 @@ int main(int argc, char **argv)
         rot.at<float>(0) = 0;
         rot.at<float>(1) = 0;
         rot.at<float>(2) = 1;
-        cam.rotate(rot, 0.1); //right 1/100 of a rad
+        cam.rotate(rot, 0.1f); //right 1/100 of a rad
         break;
       case 'd':
         //Yaw left
         rot.at<float>(0) = 0;
         rot.at<float>(1) = 0;
         rot.at<float>(2) = 1;
-        cam.rotate(rot, -0.1); //left 1/100 of a rad
+        cam.rotate(rot, -0.1f); //left 1/100 of a rad
         break;
       case 'w':
         //Pitch up
         rot.at<float>(0) = cam.u.at<float>(0);
         rot.at<float>(1) = cam.u.at<float>(1);
         rot.at<float>(2) = cam.u.at<float>(2);
-        cam.rotate(rot, -0.1); //up 1/10 of a rad
+        cam.rotate(rot, -0.1f); //up 1/10 of a rad
         break;
       case 's':
         //Pitch down
         rot.at<float>(0) = cam.u.at<float>(0);
         rot.at<float>(1) = cam.u.at<float>(1);
         rot.at<float>(2) = cam.u.at<float>(2);
-        cam.rotate(rot, 0.1); //down 1/10 of a rad
+        cam.rotate(rot, 0.1f); //down 1/10 of a rad
         break;
       case 'z':
         //Roll left
         rot.at<float>(0) = cam.n.at<float>(0);
         rot.at<float>(1) = cam.n.at<float>(1);
         rot.at<float>(2) = cam.n.at<float>(2);
-        cam.rotate(rot, 0.1); //left 1/10 of a rad
+        cam.rotate(rot, 0.1f); //left 1/10 of a rad
         break;
       case 'c':
         //Roll right
         rot.at<float>(0) = cam.n.at<float>(0);
         rot.at<float>(1) = cam.n.at<float>(1);
         rot.at<float>(2) = cam.n.at<float>(2);
-        cam.rotate(rot, -0.1); //right 1/10 of a rad
+        cam.rotate(rot, -0.1f); //right 1/10 of a rad
         break;
       case 'r':
         //Zoom in
@@ -249,4 +211,70 @@ int main(int argc, char **argv)
   }
 
   return 0;
+}
+
+void setupDefaultScene(vector<GenericObject*> &objects, Camera &cam, Scalar &backColour, Light &light){
+  // Setup objects
+  // Insert the default objects
+  Scalar rho_ad(0.25, 0.25, 0.5), rho_s(0.333, 0.333, 0.333);
+  cv::Mat trans = cv::Mat::eye(4, 4, CV_32FC1);
+  trans.at<float>(2, 3) = 0.6f;
+  Sphere *defaultSphere = new Sphere(trans, rho_ad, rho_ad, rho_s);
+  defaultSphere->name = "Default red sphere";
+  objects.push_back(defaultSphere);
+  rho_ad = Scalar(0.5, 0.25, 0.25);
+  rho_s = Scalar(0.45, 0.25, 0.25);
+  trans = trans*0.25; // Scale down
+  trans.at<float>(0, 3) = 1.0f;
+  trans.at<float>(1, 3) = -1.0f;
+  trans.at<float>(2, 3) = 1.0f;
+  trans.at<float>(3, 3) = 1.0f;
+  Sphere *sphere2 = new Sphere(trans, rho_ad, rho_ad, rho_s);
+  sphere2->name = "Default blue sphere";
+  objects.push_back(sphere2);
+  // Add a gray plane
+  rho_ad = Scalar(0.333, 0.333, 0.333);
+  rho_s = Scalar(0.333, 0.333, 0.333);
+  trans = cv::Mat::eye(4, 4, CV_32FC1);
+  Plane *defaultPlane = new Plane(trans, rho_ad, rho_ad, rho_s);
+  defaultPlane->name = "Default plane";
+  objects.push_back(defaultPlane);
+
+
+
+  // Setup camera
+  // Camera position
+  cam.e = Mat::ones(4, 1, CV_32FC1);
+  cam.e.at<float>(0) = 5;
+  cam.e.at<float>(1) = 5;
+  cam.e.at<float>(2) = 5;
+  // Gaze point
+  cam.g = Mat::zeros(4, 1, CV_32FC1);
+  cam.g.at<float>(2) = 0;
+  cam.g.at<float>(3) = 1;
+  // Up vector
+  Mat p = Mat::zeros(4, 1, CV_32FC1);
+  p.at<float>(2) = 1;
+  p.at<float>(3) = 1;
+  // Camera's m, u, and v vectors
+  cam.n = RenderUtils::homoNormalize(cam.e - cam.g);
+  cam.u = RenderUtils::homoNormalize(RenderUtils::homoCross(p, cam.n));
+  cam.v = RenderUtils::homoNormalize(RenderUtils::homoCross(cam.n, cam.u));
+
+
+
+  // Setup background colour
+  backColour = Scalar(30, 30, 30);
+  
+
+
+  // Setup light source
+  light.centre = Mat::ones(4, 1, CV_32FC1);
+  light.centre = light.centre * 5;
+  light.centre.at<float>(0) = -light.centre.at<float>(0);
+  light.centre.at<float>(3) = 0;
+  light.intensity = Scalar(1, 1, 1); // White light
+  light.ambientIntensity = Scalar(0.22, 0.22, 0.22);
+
+  return;
 }

@@ -26,6 +26,9 @@ void RayTracer::traceImage(cv::Mat &renderImage, float W, float H, float N,
       // Trace ray for row r, column c
       float u = -W + W*((float)2 * c) / renderImage.cols;
       float v = -H + H*((float)2 * r) / renderImage.rows;
+      if (r == 82 && c == 107){
+        c = c;
+      }
       // Negate v to turn image right way up
       v = -v;
       // Trace a ray

@@ -19,10 +19,11 @@
 */
 
 #include "Plane.h"
+#include "RenderUtils.h"
 
 Plane::Plane()
 {
-  _z = 0;
+  transformSet(cv::Mat::eye(4, 4, CV_32FC1));
   for (int i = 0; i < 3; i++)
   {
     rho_a[i] = rho_s[i] = 0;
@@ -30,9 +31,9 @@ Plane::Plane()
   }
 }
 
-Plane::Plane(cv::Scalar rho_a, cv::Scalar rho_d, cv::Scalar rho_s)
+Plane::Plane(cv::Mat trans, cv::Scalar rho_a, cv::Scalar rho_d, cv::Scalar rho_s)
 {
-  _z = 0;
+  transformSet(trans); // Also handles setting up the inverse transform
   this->rho_a = rho_a;
   this->rho_d = rho_d;
   this->rho_s = rho_s;
@@ -60,8 +61,18 @@ bool Plane::intersect(cv::Mat e, cv::Mat d, float &dist)
 
 cv::Mat Plane::normal(cv::Mat point)
 {
+  // Point isn't actually needed to get the normal.
+  // Only needed for complying to the super class (other objects need the point).
+
+  // Normal in base plane coordinates
   cv::Mat ret = cv::Mat::zeros(4, 1, CV_32FC1);
   ret.at<float>(2) = 1;
+
+  // Transform into world coordinates
+  ret = _M*ret;
+
+  // Normalize
+  RenderUtils::homoNormalize(ret);
 
   return ret;
 }

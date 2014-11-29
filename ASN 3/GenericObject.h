@@ -25,12 +25,18 @@
 class GenericObject
 {
 protected:
-
+  // Transform matrix
+  cv::Mat _M;
+  // Inverse of the transform matrix
+  // Should be updated whenever the transform matrix 
+  // is to reduce load
+  // Used to transform rays
+  cv::Mat _Mi;
 public:
   // Constructor
-  GenericObject(){}
+  GenericObject();
   // Destructor
-  ~GenericObject(){}
+  ~GenericObject();
 
   // Name of the object - just for the UI
   std::string name;
@@ -45,6 +51,8 @@ public:
 
     Calculates the shortest intersection of the ray defined by e and d that has
     a distance greater than 0.
+
+    Should use the Mi matrix to transform the rays.
 
     args:
       cv::Mat e:
@@ -80,14 +88,51 @@ public:
   virtual cv::Mat normal(cv::Mat point) = 0;  
 
   /*
-  These functions are not necessary for this assignment, and will be
-  implemented at a later time.
+    getTransform()
+    getInvTransform()
+
+    Getters for the transform and inverse transform matrices.
+
+    args:
+      None
+
+    return:
+      cv::Mat:
+        Transform or inverse transform matrix.
   */
-  // TODO: Implement
-  //// Moves the object to a point
-  //virtual void moveTo(float x, float y, float z);
-  //// Moves the object by a vector
-  //virtual void moveBy(float x, float y, float z);
+  cv::Mat getTransform();
+  cv::Mat getInvTransform();
+
+  /*
+    transformBy(...)
+
+    Applies a transformation matrix to the object's
+    transformation matrix.
+
+    args:
+      cv::Mat trans:
+        The matrix to transform the object's 
+        transformation matrix by.
+
+    return:
+      void
+  */
+  void transformBy(cv::Mat trans);
+
+  /*
+    transformSet(...)
+
+    Copies the given transform matrix over the object's
+    transformation matrix.
+
+    args:
+      cv::Mat trans:
+        The new transformation matrix to use.
+
+    return:
+      void
+  */
+  void transformSet(cv::Mat trans);
 };
 
 #endif
