@@ -77,10 +77,11 @@ bool Sphere::intersect(cv::Mat e, cv::Mat d, float &dist)
 
   // See if the other intersection works
   // Try the other intersection, it might be positive
-  dist = (-b + sqrtDet) / (2 * a);
-  if (dist > 0)
+  t = (-b + sqrtDet) / (2 * a);
+  if (t > 0)
   {
     // Intersection found!
+    dist = t;
     return true;
   }
 
