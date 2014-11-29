@@ -23,7 +23,8 @@
 #include "opencv/highgui.h"
 //#include "Point.h"
 
-class ImageManip{
+class ImageManip
+{
 public:
   /*
     whiten(...)

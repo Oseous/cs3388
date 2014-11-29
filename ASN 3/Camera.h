@@ -16,7 +16,8 @@
 
 #include <opencv2\core\core.hpp>
 
-class Camera{
+class Camera
+{
 private:
 
 public:

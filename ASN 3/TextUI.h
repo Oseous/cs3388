@@ -19,7 +19,8 @@
 #include "GenericObject.h"
 #include "Light.h"
 
-class TextUI{
+class TextUI
+{
 private:
 
 public:

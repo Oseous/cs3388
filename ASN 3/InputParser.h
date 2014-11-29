@@ -19,7 +19,8 @@
 #include <iostream>
 #include <string>
 
-class InputParser{
+class InputParser
+{
 public:
   /*
     getFloat(...)

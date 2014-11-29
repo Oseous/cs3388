@@ -19,7 +19,8 @@
 #include <string>
 #include <opencv2\core\core.hpp>
 
-class RenderUtils{
+class RenderUtils
+{
 private:
 
 public:
