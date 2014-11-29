@@ -64,7 +64,6 @@ public:
   */
   static void displayProcessingMessage();
 
-
   /*
     displayStartupMessage()
 
