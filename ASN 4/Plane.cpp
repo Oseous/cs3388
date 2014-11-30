@@ -22,26 +22,17 @@
 #include "RenderUtils.h"
 
 Plane::Plane()
-{
-  transformSet(cv::Mat::eye(4, 4, CV_32FC1));
-  for (int i = 0; i < 3; i++)
-  {
-    rho_a[i] = rho_s[i] = 0;
-    rho_d[i] = 0.9;
-  }
+  : GenericObject(){
+  // Nothing special to do...
 }
 
 Plane::Plane(cv::Mat trans, cv::Scalar rho_a, cv::Scalar rho_d, cv::Scalar rho_s)
-{
-  transformSet(trans); // Also handles setting up the inverse transform
-  this->rho_a = rho_a;
-  this->rho_d = rho_d;
-  this->rho_s = rho_s;
+  : GenericObject(trans, rho_a, rho_d, rho_s){
+  // Nothing special to do...
 }
 
-Plane::~Plane()
-{
-
+Plane::~Plane(){
+  // Nothing special to do...
 }
 
 bool Plane::intersect(cv::Mat e, cv::Mat d, float &dist)

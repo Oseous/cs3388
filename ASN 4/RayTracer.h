@@ -21,8 +21,7 @@
 #include "Camera.h"
 #include "Light.h"
 
-class RayTracer
-{
+class RayTracer{
 public:
   /*
     traceImage()

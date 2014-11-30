@@ -23,29 +23,28 @@
 
 #include "GenericObject.h"
 
-class Plane : public GenericObject
-{
+class Plane : public GenericObject{
 private:
 
 public:
   /*
-    Plane()
+  Plane()
 
-    The default constructor for Plane.
-    Creates a gray plane.
+  The default constructor for Plane.
+  Creates a gray plane.
   */
   Plane();
 
   /*
-    Plane(...)
+  Plane(...)
 
-    An extra constructor that allows planes of different colours to be created easily.
+  An extra constructor that allows planes of different colours to be created easily.
 
-    args:
-      cv::Mat trans:
-        Transform to apply to the plane.
-      cv::Scalar rho_a, rho_d, rho_s:
-        The ambient, diffuse, and specular lighting factors of the new plane.
+  args:
+  cv::Mat trans:
+  Transform to apply to the plane.
+  cv::Scalar rho_a, rho_d, rho_s:
+  The ambient, diffuse, and specular lighting factors of the new plane.
   */
   Plane(cv::Mat trans, cv::Scalar rho_a, cv::Scalar rho_d, cv::Scalar rho_s);
 

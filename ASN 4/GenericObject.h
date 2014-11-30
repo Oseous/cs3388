@@ -33,9 +33,36 @@ protected:
   // Used to transform rays
   cv::Mat _Mi;
 public:
-  // Constructor
+  /*
+    GenericObject()  
+    
+    Default Constructor. Creates unit object at origin.
+    Light gray and mostly diffuse.
+  */
   GenericObject();
-  // Destructor
+
+  /*
+    GenericObject(...)
+
+    Specific Constructor. Creates a transformed object
+    with specified lighting factors.
+
+    Args:
+      cv::Mat trans:
+        The transform to apply to the cylinder.
+      cv::Scalar rho_a, rho_d, rho_d:
+        The ambient, diffuse, and specular lighting
+        factors of the new cylinder.
+  */
+  GenericObject(cv::Mat trans, cv::Scalar rho_a, cv::Scalar rho_d, cv::Scalar rho_s);
+
+  /*
+    ~GenericObject()
+
+    Destructor. Subclasses should try not to have
+    any dynamic storage types so that they do not
+    need to define their own destructors.
+  */
   ~GenericObject();
 
   // Name of the object - just for the UI

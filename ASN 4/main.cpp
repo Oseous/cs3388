@@ -26,6 +26,7 @@
 #include "GenericObject.h"
 #include "Sphere.h"
 #include "Plane.h"
+#include "Cylinder.h"
 
 #include "Camera.h"
 #include "RenderUtils.h"
@@ -48,6 +49,9 @@ using namespace cv;
 
 // Just initializes all of the objects to the desired default scene
 void setupDefaultScene(vector<GenericObject*> &objects, Camera &cam, Scalar &backColour, vector<Light> &lights, Light ambientLight);
+
+// Initializes the second default scene. Shifts existing objects. Adds a sun light.
+void setupScene2(vector<GenericObject*> &objects, Camera &cam, Scalar &backColour, vector<Light> &lights, Light ambientLight);
 
 int main(int argc, char **argv)
 {
@@ -73,6 +77,7 @@ int main(int argc, char **argv)
 
   // Setup function
   setupDefaultScene(objects, cam, backColour, lights, ambientLight);
+  setupScene2(objects, cam, backColour, lights, ambientLight);
 
   // Allocate the image to draw to
   namedWindow("Render Window", WINDOW_AUTOSIZE);
@@ -221,12 +226,14 @@ int main(int argc, char **argv)
   return 0;
 }
 
-void setupDefaultScene(vector<GenericObject*> &objects, Camera &cam, Scalar &backColour, vector<Light> &lights, Light ambientLight){
+void setupDefaultScene(vector<GenericObject*> &objects, Camera &cam, Scalar &backColour, 
+    vector<Light> &lights, Light ambientLight){
   // Setup objects
   // Insert the default objects
   Scalar rho_ad(0.25, 0.25, 0.5), rho_s(0.333, 0.333, 0.333);
   cv::Mat trans = cv::Mat::eye(4, 4, CV_32FC1);
-  trans.at<float>(2, 3) = 0.6f;
+  //trans.at<float>(2, 3) = 0.6f;
+  trans.at<float>(2, 3) = 0.8f;
   Sphere *defaultSphere = new Sphere(trans, rho_ad, rho_ad, rho_s);
   defaultSphere->name = "Default red sphere";
   objects.push_back(defaultSphere);
@@ -282,7 +289,7 @@ void setupDefaultScene(vector<GenericObject*> &objects, Camera &cam, Scalar &bac
   light.centre = light.centre * 5;
   light.centre.at<float>(0) = -light.centre.at<float>(0);
   light.centre.at<float>(3) = 1; // Point
-  light.intensity = Scalar(0.1, 0.8, 0.1); // Mostly green light
+  light.intensity = Scalar(0.1, 0.5, 0.1); // Mostly green light
   light.name = "Default green light";
   lights.emplace_back(light);
   Light light2;
@@ -291,7 +298,7 @@ void setupDefaultScene(vector<GenericObject*> &objects, Camera &cam, Scalar &bac
   light2.centre.at<float>(0) = -light2.centre.at<float>(0);
   light2.centre.at<float>(1) = -light2.centre.at<float>(1);
   light2.centre.at<float>(3) = 1; // Point
-  light2.intensity = Scalar(0.8, 0.1, 0.1); // Mostly blue light
+  light2.intensity = Scalar(0.5, 0.1, 0.1); // Mostly blue light
   light2.name = "Default blue light";
   lights.emplace_back(light2);
   Light light3;
@@ -300,7 +307,7 @@ void setupDefaultScene(vector<GenericObject*> &objects, Camera &cam, Scalar &bac
   light3.centre.at<float>(0) = sqrt(pow(light3.centre.at<float>(0),2)*2);
   light3.centre.at<float>(1) = 0;
   light3.centre.at<float>(3) = 1; // Point
-  light3.intensity = Scalar(0.1, 0.1, 0.8); // Mostly red light
+  light3.intensity = Scalar(0.1, 0.1, 0.5); // Mostly red light
   light3.name = "Default red light";
   lights.emplace_back(light3);
 
@@ -310,4 +317,39 @@ void setupDefaultScene(vector<GenericObject*> &objects, Camera &cam, Scalar &bac
   ambientLight.name = "Ambient light";
 
   return;
+}
+
+void setupScene2(vector<GenericObject*> &objects, Camera &cam, Scalar &backColour,
+    vector<Light> &lights, Light ambientLight){
+  // Shift all objects
+  Mat shiftTrans = Mat::eye(4, 4, CV_32FC1); // Do not scale!
+  shiftTrans.at<float>(0, 3) = -5; // Move back 5 along X
+  for (int i = 0; i < objects.size()-1; i++){
+    objects[i]->transformBy(shiftTrans);
+  }
+
+  // Add a 'sun' light
+  Light light;
+  light.centre = Mat::ones(4, 1, CV_32FC1);
+  light.centre.at<float>(0) = 0;
+  light.centre.at<float>(1) = 0;
+  light.centre = light.centre * 300; // Just put it really far away to fake parallel lighting
+  light.centre.at<float>(3) = 1; // Point
+  light.intensity = Scalar(0.75, 0.75, 0.75); // Fairly bright white
+  light.name = "Scene2: 'sun' light";
+  lights.emplace_back(light);
+
+  //Add a black cylinder
+  Scalar rho_ad(0.75, 0.75, 0.75), rho_s(0.333, 0.333, 0.333);
+  cv::Mat trans = cv::Mat::eye(4, 4, CV_32FC1);
+  rho_ad = Scalar(0.5, 0.25, 0.25);
+  rho_s = Scalar(0.45, 0.25, 0.25);
+  trans = trans*0.25; // Scale down
+  trans.at<float>(0, 0) = 0.2f;
+  trans.at<float>(1, 1) = 0.2f;
+  trans.at<float>(2, 2) = 0.75f;
+  trans.at<float>(2, 3) = 1.5f;
+  trans.at<float>(3, 3) = 1.0f;
+  Cylinder *cylinder = new Cylinder(trans, rho_ad, rho_ad, rho_s);
+  objects.emplace_back(cylinder);
 }

@@ -16,29 +16,19 @@
 
 #include "Sphere.h"
 #include "RenderUtils.h"
-Sphere::Sphere()
-{
-  // Default radius: 1
-  // Default location: origin
-  transformSet(cv::Mat::eye(4, 4, CV_32FC1));
 
-  //Default colour: light gray
-  rho_a = cv::Scalar(0, 0, 0);
-  rho_d = cv::Scalar(1, 1, 1);
-  rho_s = cv::Scalar(0, 0, 0);
+Sphere::Sphere()
+  : GenericObject(){
+  // Nothing special to do...
 }
 
 Sphere::Sphere(cv::Mat trans, cv::Scalar rho_a, cv::Scalar rho_d, cv::Scalar rho_s)
-{
-  transformSet(trans);  // Handles setting the inverse matrix too
-  this->rho_a = rho_a;
-  this->rho_d = rho_d;
-  this->rho_s = rho_s;
+  : GenericObject(trans, rho_a, rho_d, rho_s){
+  // Nothing special to do...
 }
 
-Sphere::~Sphere()
-{
-  //Nothing to let go of
+Sphere::~Sphere(){
+  // Nothing special to do...
 }
 
 bool Sphere::intersect(cv::Mat e, cv::Mat d, float &dist)
@@ -49,11 +39,11 @@ bool Sphere::intersect(cv::Mat e, cv::Mat d, float &dist)
 
   // Check if there is an intersection
   float a = RenderUtils::homoMagSq(dp);
-  float b = 2 * RenderUtils::homoDot(dp, ep);
+  float b = RenderUtils::homoDot(dp, ep);
   float c = RenderUtils::homoMagSq(ep) - 1;
 
   // Calculate determinant
-  float det = pow(b, 2) - 4 * a * c;
+  float det = pow(b, 2) - a * c;
 
   // Check if there even is an intersection
   if (det < 0)
@@ -64,7 +54,7 @@ bool Sphere::intersect(cv::Mat e, cv::Mat d, float &dist)
 
   // Try shorter distance first
   float sqrtDet = sqrt(det);
-  float t = (-b - sqrtDet) / (2 * a);
+  float t = (-b - sqrtDet) / a;
 
   // Check if the lesser intersection is at
   // a positive t (if it is, it's closer)
@@ -76,10 +66,11 @@ bool Sphere::intersect(cv::Mat e, cv::Mat d, float &dist)
 
   // See if the other intersection works
   // Try the other intersection, it might be positive
-  dist = (-b + sqrtDet) / (2 * a);
-  if (dist > 0)
+  t = (-b + sqrtDet) / a;
+  if (t > 0)
   {
     // Intersection found!
+    dist = t;
     return true;
   }
 

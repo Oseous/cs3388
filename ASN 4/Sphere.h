@@ -19,8 +19,7 @@
 
 #include "GenericObject.h"
 
-class Sphere : public GenericObject
-{
+class Sphere : public GenericObject{
 private:
 
 public:
@@ -28,7 +27,7 @@ public:
     Sphere()
 
     Default constructor for Sphere.
-    Creates a gray sphere with radius 1 centred at 
+    Creates a gray sphere with radius 1 centred at
     the origin.
   */
   Sphere();
@@ -36,18 +35,18 @@ public:
   /*
     Sphere(...)
 
-    An extra constructor for sphere that allows any 
+    An extra constructor for sphere that allows any
     specific sphere to be initialized easily.
 
     Args:
       cv::Mat trans:
         The transform to apply to the sphere.
       cv::Scalar rho_a, rho_d, rho_d:
-        The ambient, diffuse, and specular lighting 
+        The ambient, diffuse, and specular lighting
         factors of the new sphere.
   */
   Sphere(cv::Mat trans, cv::Scalar rho_a, cv::Scalar rho_d, cv::Scalar rho_s);
-  
+
   /*
     ~Sphere()
 
