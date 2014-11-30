@@ -19,7 +19,8 @@
 
 #include "GenericObject.h"
 #include "Camera.h"
-#include "Light.h"
+#include "GenericLight.h"
+#include "PointLight.h"
 
 class RayTracer{
 public:
@@ -45,8 +46,9 @@ public:
         A reference to the scalar holding the background colour of the scene.
         If a ray has no intersections, this is the colour that will be used
         for that point in the final image.
-      std::vector<Light> &lights:
-        A reference to the list of lights to use for rendering the scene.
+      std::vector<GenericLight*> &lights:
+        A reference to the list of pointers to the lights to use for rendering 
+        the scene.
       Light &ambientLight:
         A reference point to the special light that is the ambient light.
         Location is ignored.
@@ -56,8 +58,8 @@ public:
   */
   static void traceImage(cv::Mat &renderImage, float W, float H, float N, 
     std::vector<GenericObject*> &objects, Camera &cam, 
-    cv::Scalar &backColour, std::vector<Light> &lights,
-    Light &ambientLight);
+    cv::Scalar &backColour, std::vector<GenericLight*> &lights,
+    PointLight &ambientLight);
 
 private:
   /*
@@ -84,8 +86,8 @@ private:
       cv::Scalar &backColour:
         The background colour to use if a ray does
         not intersect any objects.
-      vector<Light> &lights:
-        A reference to the scene's list of point lights.
+      vector<GenericLight*> &lights:
+        A reference to the scene's list of pointers to lights.
       Light &ambientLight:
         A reference point to the special light that is the ambient light.
         Location is ignored.
@@ -97,7 +99,7 @@ private:
           coordinates in the image.
   */
   static cv::Scalar traceRay(float u, float v, float N, std::vector<GenericObject*> &objects, 
-    Camera &cam, cv::Scalar &backColour, std::vector<Light> &light, Light &ambientLight);
+    Camera &cam, cv::Scalar &backColour, std::vector<GenericLight*> &light, PointLight &ambientLight);
 
   /*
     intersectRay(...)

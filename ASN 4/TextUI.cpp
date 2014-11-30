@@ -21,9 +21,12 @@
 #include "TextUI.h"
 #include "InputParser.h"
 
-
 #include "Plane.h"
 #include "Sphere.h"
+
+#include "GenericLight.h"
+#include "PointLight.h"
+#include "SunLight.h"
 
 void TextUI::displayHeader(){
 	std::cout << "\n" << "******************************************************\n" << std::endl
@@ -56,7 +59,7 @@ void TextUI::displayMenu(){
 void TextUI::displayProcessingMessage(){
   std::cout <<
     "Processing next frame...\n" <<
-    "Please wait about ten seconds...\n";
+    "Please wait about a minute...\n";
   return;
 }
 
@@ -67,49 +70,77 @@ void TextUI::displayStartupMessage(){
   return;
 }
 
-bool TextUI::addLight(std::vector<Light> &lights){
+bool TextUI::addLight(std::vector<GenericLight*> &lights){
+  std::cout << "Would you like to create a point (p/P) or sun (s/S) light?\n";
+  char c;
+  if (!InputParser::getChar(c))
+    return false;
+  if (!(c == 'p' || c == 'P' || c == 's' || c == 'S'))
   // Make a light
   std::cout << "What do you want to call the light?\n";
   std::string name;
   if (!InputParser::getString(name))
     return false;
   // Get point location
-  std::cout << "Please enter the new point light coordinates (x,y,z) one at a time:\n";
-  float co[6];
+  std::cout << "Please enter the new light's coordinates (x,y,z) one at a time:\n";
+  float co[9];
   for (int i = 0; i < 3; i++)
   {
     if (!InputParser::getFloat(co[i]))
       return false;
   }
-  std::cout << "Please enter the new point light intensity (B,G,R) coefficients one at a time:\n";
+  std::cout << "Please enter the new light's intensity (B,G,R) coefficients one at a time:\n";
   // Get point intensity
   for (int i = 3; i < 6; i++)
   {
     if (!InputParser::getFloat(co[i]))
       return false;
   }
-  //std::cout << "Please enter the new ambient light intensity (B,G,R) coefficients one at a time:\n";
-  //// Get ambient intensity
-  //for (int i = 6; i < 9; i++)
-  //{
-  //  if (!InputParser::getFloat(co[i]))
-  //    return false;
-  //}
-  Light light;
-  light.name = name;
-  light.centre = cv::Mat::ones(4, 1, CV_32FC1);
-  light.centre.at<float>(0) = co[0];
-  light.centre.at<float>(1) = co[1];
-  light.centre.at<float>(2) = co[2];
-  cv::Scalar intensity = cv::Scalar(co[3], co[4], co[5]);
-  light.intensity = intensity;
+
+  GenericLight *light;
+
+  // Specific to sun light
+  if (c == 's' || c == 'S'){
+    std::cout << "Please enter the sun light's direction (x,y,z) coefficients one at a time.\n"
+      << "Note - the program will normalize your input for you:\n";
+    // Get the sun light's direction
+    for (int i = 6; i < 9; i++)
+    {
+      if (!InputParser::getFloat(co[i]))
+        return false;
+    }
+    light = new SunLight();
+    light->name = name;
+    light->centre = cv::Mat::ones(4, 1, CV_32FC1);
+    light->centre.at<float>(0) = co[0];
+    light->centre.at<float>(1) = co[1];
+    light->centre.at<float>(2) = co[2];
+    cv::Scalar intensity = cv::Scalar(co[3], co[4], co[5]);
+    light->intensity = intensity;
+    light->direction = cv::Mat::ones(4, 1, CV_32FC1);
+    light->direction.at<float>(0) = co[6];
+    light->direction.at<float>(1) = co[7];
+    light->direction.at<float>(2) = co[8];
+  }
+  else{
+    // Point light
+    light = new PointLight();
+    light->name = name;
+    light->centre = cv::Mat::ones(4, 1, CV_32FC1);
+    light->centre.at<float>(0) = co[0];
+    light->centre.at<float>(1) = co[1];
+    light->centre.at<float>(2) = co[2];
+    cv::Scalar intensity = cv::Scalar(co[3], co[4], co[5]);
+    light->intensity = intensity;
+    light->direction = NULL;
+  }
 
   lights.emplace_back(light);
 
   return true;
 }
 
-bool TextUI::removeLight(std::vector<Light> &lights){
+bool TextUI::removeLight(std::vector<GenericLight*> &lights){
   // List all lights:
   std::cout
     << "******************************\n"
@@ -117,7 +148,7 @@ bool TextUI::removeLight(std::vector<Light> &lights){
     << "------------------------------\n";
   for (int i = 0; i < lights.size(); i++)
   {
-    std::cout << "   " << i << " - " << lights[i].name << std::endl;
+    std::cout << "   " << i << " - " << lights[i]->name << std::endl;
   }
   std::cout << "******************************\n"
     << "Which object would you like to delete?\n";
@@ -127,6 +158,8 @@ bool TextUI::removeLight(std::vector<Light> &lights){
   if (0 > idx || idx >= lights.size())
     return false;
 
+  // Free the actual generic light
+  delete lights[idx];
   // Delete the pointer
   lights.erase(lights.begin() + idx);
 
@@ -234,4 +267,26 @@ bool TextUI::removeObject(std::vector<GenericObject*> &objects)
   objects.erase(objects.begin() + idx);
 
   return true;
+}
+
+bool TextUI::snowManPrompt()
+{
+  std::cout << "Do you want to build a snowman (y/n)?\n"
+    << "Warning: Snowman production is time consuming.\n";
+  char c;
+  if (!InputParser::getChar(c))
+    return false;
+  switch (c)
+  {
+  case 'y':
+  case 'Y':
+    return true;
+    break;
+  case 'n':
+  case 'N':
+    return false;
+    break;
+  default:
+    return false;
+  }
 }

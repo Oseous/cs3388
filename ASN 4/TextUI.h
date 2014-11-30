@@ -17,13 +17,13 @@
 #include <vector>
 
 #include "GenericObject.h"
-#include "Light.h"
+#include "GenericLight.h"
 
 class TextUI{
 private:
 
 public:
-  
+
   /*
     displayHeader()
 
@@ -94,7 +94,7 @@ public:
         True if the changes were made.
         Otherwise, false.
   */
-  static bool addLight(std::vector<Light> &lights);
+  static bool addLight(std::vector<GenericLight*> &lights);
 
   /*
     removeLight(...)
@@ -111,7 +111,7 @@ public:
         True if the changes were made.
         Otherwise, false.
   */
-  static bool removeLight(std::vector<Light> &lights);
+  static bool removeLight(std::vector<GenericLight*> &lights);
 
   /*
     addObject(...)
@@ -148,6 +148,20 @@ public:
         Whether insertion of a new object was successful.
   */
   static bool removeObject(std::vector<GenericObject*> &objects);
+
+  /*
+  snowManPrompt()
+
+  Asks the user if they want to build a snowman.
+
+  args:
+  void
+
+  return:
+  bool:
+  True if the user wants a snowman.
+  */
+  static bool snowManPrompt();
 
 private:
 

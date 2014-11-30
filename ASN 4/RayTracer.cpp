@@ -17,8 +17,8 @@
 
 void RayTracer::traceImage(cv::Mat &renderImage, float W, float H, float N, 
     std::vector<GenericObject*> &objects, Camera &cam, 
-    cv::Scalar &backColour, std::vector<Light> &lights,
-    Light &ambientLight)
+    cv::Scalar &backColour, std::vector<GenericLight*> &lights,
+    PointLight &ambientLight)
 {
   for (int r = 0; r < renderImage.rows; r++)
   {
@@ -43,7 +43,7 @@ void RayTracer::traceImage(cv::Mat &renderImage, float W, float H, float N,
 }
 
 cv::Scalar RayTracer::traceRay(float u, float v, float N, std::vector<GenericObject*> &objects, 
-    Camera &cam, cv::Scalar &backColour, std::vector<Light> &lights, Light &ambientLight)
+    Camera &cam, cv::Scalar &backColour, std::vector<GenericLight*> &lights, PointLight &ambientLight)
 {
   // Get the ray's direction vector  
   static cv::Mat d = cv::Mat::zeros(4, 1, CV_32FC1);
@@ -65,13 +65,13 @@ cv::Scalar RayTracer::traceRay(float u, float v, float N, std::vector<GenericObj
 
   // Loop through all lights
   for (int i = 0; i < lights.size(); i++){
-    Light &light = lights[i]; // Gets the current light
+    GenericLight &light = *lights[i]; // Gets the current light
 
     cv::Mat intersection = cam.e + d*t;      // Get the intersection point
-    cv::Mat s = light.centre - intersection; // Vector to light from intersection
+    cv::Mat s = light.toLight(intersection); // Vector to light from intersection
 
     // Do shadow ray:
-    if (!shadowRay(light.centre, -s, objects)) // Returns true if it really is a shadow ray
+    if (!shadowRay(intersection + s, -s, objects)) // Returns true if it really is a shadow ray
     {
       // Unit vectors for lighting effects
       RenderUtils::homoNormalize(s); // Normalize s

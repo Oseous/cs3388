@@ -29,6 +29,10 @@
 #include "Cylinder.h"
 #include "Cone.h"
 
+#include "GenericLight.h"
+#include "PointLight.h"
+#include "SunLight.h"
+
 #include "Camera.h"
 #include "RenderUtils.h"
 #include "ImageManip.h"
@@ -37,8 +41,8 @@
 #include "TextUI.h"
 
 #define PI ((float)3.14159265358979323846)
-#define WIDTH (640/2)
-#define HEIGHT (480/2)
+#define WIDTH (640)
+#define HEIGHT (480)
 #define VIEWING_ANGLE (float)45.0
 #define N 5.0
 //#define F 25.0f
@@ -49,10 +53,16 @@ using namespace cv;
 #define DEBUG
 
 // Just initializes all of the objects to the desired default scene
-void setupDefaultScene(vector<GenericObject*> &objects, Camera &cam, Scalar &backColour, vector<Light> &lights, Light &ambientLight);
+void setupDefaultScene(vector<GenericObject*> &objects, Camera &cam, Scalar &backColour,
+    vector<GenericLight*> &lights, PointLight &ambientLight);
 
 // Initializes the second default scene. Shifts existing objects. Adds a sun light.
-void setupScene2(vector<GenericObject*> &objects, Camera &cam, Scalar &backColour, vector<Light> &lights, Light &ambientLight);
+void setupScene2(vector<GenericObject*> &objects, Camera &cam, Scalar &backColour, 
+    vector<GenericLight*> &lights, PointLight &ambientLight);
+
+// Initializes the Christmas scene. Shifts existing objects. Adds a sun light.
+void buildSnowman(vector<GenericObject*> &objects, Camera &cam, Scalar &backColour,
+  vector<GenericLight*> &lights, PointLight &ambientLight);
 
 int main(int argc, char **argv)
 {
@@ -71,14 +81,17 @@ int main(int argc, char **argv)
   Scalar backColour;
   
   // Declare lights list
-  vector<Light> lights;
+  vector<GenericLight*> lights;
 
   // Declare the ambient light
-  Light ambientLight;
+  PointLight ambientLight;
 
   // Setup function
   setupDefaultScene(objects, cam, backColour, lights, ambientLight);
   setupScene2(objects, cam, backColour, lights, ambientLight);
+  if (TextUI::snowManPrompt())
+    buildSnowman(objects, cam, backColour, lights, ambientLight);
+
 
   // Allocate the image to draw to
   namedWindow("Render Window", WINDOW_AUTOSIZE);
@@ -228,7 +241,7 @@ int main(int argc, char **argv)
 }
 
 void setupDefaultScene(vector<GenericObject*> &objects, Camera &cam, Scalar &backColour, 
-    vector<Light> &lights, Light &ambientLight){
+    vector<GenericLight*> &lights, PointLight &ambientLight){
   // Setup objects
   // Insert the default objects
   Scalar rho_ad(0.25, 0.25, 0.5), rho_s(0.333, 0.333, 0.333);
@@ -285,32 +298,35 @@ void setupDefaultScene(vector<GenericObject*> &objects, Camera &cam, Scalar &bac
 
 
   // Setup light sources
-  Light light;
-  light.centre = Mat::ones(4, 1, CV_32FC1);
-  light.centre = light.centre * 5;
-  light.centre.at<float>(0) = -light.centre.at<float>(0);
-  light.centre.at<float>(3) = 1; // Point
-  light.intensity = Scalar(0.1, 0.5, 0.1); // Mostly green light
-  light.name = "Default green light";
+  GenericLight *light = new PointLight();
+  light->centre = Mat::ones(4, 1, CV_32FC1);
+  light->centre = light->centre * 5;
+  light->centre.at<float>(0) = -light->centre.at<float>(0);
+  light->centre.at<float>(3) = 1; // Point
+  light->direction = Mat::zeros(4, 1, CV_32FC1); // Zero vector
+  light->intensity = Scalar(0.1, 0.5, 0.1); // Mostly green light
+  light->name = "Default green light";
   lights.emplace_back(light);
-  Light light2;
-  light2.centre = Mat::ones(4, 1, CV_32FC1);
-  light2.centre = light2.centre * 5;
-  light2.centre.at<float>(0) = -light2.centre.at<float>(0);
-  light2.centre.at<float>(1) = -light2.centre.at<float>(1);
-  light2.centre.at<float>(3) = 1; // Point
-  light2.intensity = Scalar(0.5, 0.1, 0.1); // Mostly blue light
-  light2.name = "Default blue light";
-  lights.emplace_back(light2);
-  Light light3;
-  light3.centre = Mat::ones(4, 1, CV_32FC1);
-  light3.centre = light3.centre * 5;
-  light3.centre.at<float>(0) = sqrt(pow(light3.centre.at<float>(0),2)*2);
-  light3.centre.at<float>(1) = 0;
-  light3.centre.at<float>(3) = 1; // Point
-  light3.intensity = Scalar(0.1, 0.1, 0.5); // Mostly red light
-  light3.name = "Default red light";
-  lights.emplace_back(light3);
+  light = new PointLight();
+  light->centre = Mat::ones(4, 1, CV_32FC1);
+  light->centre = light->centre * 5;
+  light->centre.at<float>(0) = -light->centre.at<float>(0);
+  light->centre.at<float>(1) = -light->centre.at<float>(1);
+  light->centre.at<float>(3) = 1; // Point
+  light->direction = Mat::zeros(4, 1, CV_32FC1); // Zero vector
+  light->intensity = Scalar(0.5, 0.1, 0.1); // Mostly blue light
+  light->name = "Default blue light";
+  lights.emplace_back(light);
+  light = new PointLight();
+  light->centre = Mat::ones(4, 1, CV_32FC1);
+  light->centre = light->centre * 5;
+  light->centre.at<float>(0) = sqrt(pow(light->centre.at<float>(0), 2) * 2);
+  light->centre.at<float>(1) = 0;
+  light->centre.at<float>(3) = 1; // Point
+  light->direction = Mat::zeros(4, 1, CV_32FC1); // Zero vector
+  light->intensity = Scalar(0.1, 0.1, 0.5); // Mostly red light
+  light->name = "Default red light";
+  lights.emplace_back(light);
 
   // Setup ambient light
   ambientLight.centre = Mat::ones(4, 1, CV_32FC1); // Location is unused
@@ -321,7 +337,7 @@ void setupDefaultScene(vector<GenericObject*> &objects, Camera &cam, Scalar &bac
 }
 
 void setupScene2(vector<GenericObject*> &objects, Camera &cam, Scalar &backColour,
-    vector<Light> &lights, Light &ambientLight){
+    vector<GenericLight*> &lights, PointLight &ambientLight){
   // Shift all objects
   Mat shiftTrans = Mat::eye(4, 4, CV_32FC1); // Do not scale!
   shiftTrans.at<float>(0, 3) = -5; // Move back 5 along X
@@ -330,14 +346,15 @@ void setupScene2(vector<GenericObject*> &objects, Camera &cam, Scalar &backColou
   }
 
   // Add a 'sun' light
-  Light light;
-  light.centre = Mat::ones(4, 1, CV_32FC1);
-  light.centre.at<float>(0) = 0;
-  light.centre.at<float>(1) = 0;
-  light.centre = light.centre * 200; // Just put it really far away to fake parallel lighting
-  light.centre.at<float>(3) = 1; // Point
-  light.intensity = Scalar(0.75, 0.75, 0.75); // Fairly bright white
-  light.name = "Scene2: 'sun' light";
+  GenericLight *light = new SunLight();
+  light->centre = Mat::ones(4, 1, CV_32FC1);
+  light->centre.at<float>(0) = 0;
+  light->centre.at<float>(1) = 1;
+  light->centre.at<float>(2) = 20;
+  light->centre.at<float>(3) = 1; // Point
+  light->direction = RenderUtils::homoNormalize(-light->centre); // Aim at origin
+  light->intensity = Scalar(0.75, 0.75, 0.75); // Fairly bright white
+  light->name = "Scene2: 'sun' light";
   lights.emplace_back(light);
 
   // Add a black cylinder
@@ -381,4 +398,276 @@ void setupScene2(vector<GenericObject*> &objects, Camera &cam, Scalar &backColou
   Cone *cone = new Cone(trans, rho_ad, rho_ad, rho_s);
   cone->name = "Purple cone";
   objects.emplace_back(cone);
+}
+
+void buildSnowman(vector<GenericObject*> &objects, Camera &cam, Scalar &backColour,
+  vector<GenericLight*> &lights, PointLight &ambientLight){
+  // Get current count of objects
+  int startIdx = objects.size();
+
+  // Shift all objects into background
+  Mat shift = Mat::eye(4, 4, CV_32FC1);
+  shift.at<float>(0, 3) = -3;
+  shift.at<float>(1, 3) = -3;
+  for (int i = 0; i < startIdx; i++){
+    objects[i]->transformBy(shift);
+  }
+
+  // Build body
+  float scale = 1.2;
+  {
+    Scalar rho_ad(0.9, 0.9, 0.9), rho_s(0.1, 0.1, 0.1);
+    // BASE
+    {
+      // Force transform to go out of scope
+      Mat trans = Mat::eye(4, 4, CV_32FC1);
+      trans = trans * 0.5;
+      trans.at<float>(2, 3) = 0.5;
+      trans = trans * scale;
+      trans.at<float>(3, 3) = 1;
+      Sphere *sphere = new Sphere(trans, rho_ad, rho_ad, rho_s);
+      sphere->name = "Snowman base";
+      objects.emplace_back(sphere);
+    }
+    // TORSO
+    {
+      // Force transform to go out of scope
+      Mat trans = Mat::eye(4, 4, CV_32FC1);
+      trans = trans * 0.4;
+      trans.at<float>(2, 3) = 1.2;
+      trans = trans*scale;
+      trans.at<float>(3, 3) = 1;
+      Sphere *sphere = new Sphere(trans, rho_ad, rho_ad, rho_s);
+      sphere->name = "Snowman torso";
+      objects.emplace_back(sphere);
+    }
+    // HEAD
+    {
+      // Force transform to go out of scope
+      Mat trans = Mat::eye(4, 4, CV_32FC1);
+      trans = trans * 0.3;
+      trans.at<float>(2, 3) = 1.7;
+      trans = trans*scale;
+      trans.at<float>(3, 3) = 1;
+      Sphere *sphere = new Sphere(trans, rho_ad, rho_ad, rho_s);
+      sphere->name = "Snowman head";
+      objects.emplace_back(sphere);
+    }
+  }
+
+  // Build buttons + eyes
+  {
+    Scalar rho_ad(0.1, 0.1, 0.1), rho_s(0.05, 0.05, 0.05);
+    // Button A
+    {
+      // Force transform to go out of scope
+      Mat trans = Mat::eye(4, 4, CV_32FC1);
+      trans = trans * 0.05;
+      trans.at<float>(0, 3) = 0.4*cos(25 * PI / 180);
+      trans.at<float>(2, 3) = 1.2 - 0.4*sin(25*PI/180);
+      trans = trans * scale;
+      trans.at<float>(3, 3) = 1;
+      Sphere *sphere = new Sphere(trans, rho_ad, rho_ad, rho_s);
+      sphere->name = "Button A";
+      objects.emplace_back(sphere);
+    }
+    // Button B
+    {
+      // Force transform to go out of scope
+      Mat trans = Mat::eye(4, 4, CV_32FC1);
+      trans = trans * 0.05;
+      trans.at<float>(0, 3) = 0.4;
+      trans.at<float>(2, 3) = 1.2;
+      trans = trans*scale;
+      trans.at<float>(3, 3) = 1;
+      Sphere *sphere = new Sphere(trans, rho_ad, rho_ad, rho_s);
+      sphere->name = "Button B";
+      objects.emplace_back(sphere);
+    }
+    // Button C
+    {
+      // Force transform to go out of scope
+      Mat trans = Mat::eye(4, 4, CV_32FC1);
+      trans = trans * 0.05;
+      trans.at<float>(0, 3) = 0.4*cos(25 * PI / 180);
+      trans.at<float>(2, 3) = 1.2 + 0.4*sin(25 * PI / 180);
+      trans = trans*scale;
+      trans.at<float>(3, 3) = 1;
+      Sphere *sphere = new Sphere(trans, rho_ad, rho_ad, rho_s);
+      sphere->name = "Button C";
+      objects.emplace_back(sphere);
+    }
+
+    // Right Eye
+    {
+      // Force transform to go out of scope
+      Mat trans = Mat::eye(4, 4, CV_32FC1);
+      trans = trans * 0.05;
+      trans.at<float>(0, 3) = sqrt(0.3*0.3 - 0.03*0.03)*cos(16 * PI / 180);
+      trans.at<float>(1, 3) = -sqrt(0.3*0.3 - 0.03*0.03)*sin(16 * PI / 180);
+      trans.at<float>(2, 3) = 1.7 + 0.03;
+      trans = trans*scale;
+      trans.at<float>(3, 3) = 1;
+      Sphere *sphere = new Sphere(trans, rho_ad, rho_ad, rho_s);
+      sphere->name = "Right Eye";
+      objects.emplace_back(sphere);
+    }
+    // Left Eye
+    {
+      // Force transform to go out of scope
+      Mat trans = Mat::eye(4, 4, CV_32FC1);
+      trans = trans * 0.05;
+      trans.at<float>(0, 3) = sqrt(0.3*0.3 - 0.03*0.03)*cos(16 * PI / 180);
+      trans.at<float>(1, 3) = sqrt(0.3*0.3 - 0.03*0.03)*sin(16 * PI / 180);
+      trans.at<float>(2, 3) = 1.7 + 0.03;
+      trans = trans*scale;
+      trans.at<float>(3, 3) = 1;
+      Sphere *sphere = new Sphere(trans, rho_ad, rho_ad, rho_s);
+      sphere->name = "Left Eye";
+      objects.emplace_back(sphere);
+    }
+  }
+
+  // Build Nose
+  {
+    Scalar rho_ad(0, (float)102/255, 1.0), rho_s(0.05, 0.05, 0.05);
+    // Nose
+    {
+      Mat trans = Mat::eye(4, 4, CV_32FC1);
+      // Scale
+      trans.at<float>(0, 0) = 0.04 * scale;
+      trans.at<float>(1, 1) = 0.04 * scale;
+      trans.at<float>(2, 2) = 0.3 / 2 * scale;
+      trans = trans * scale;
+      trans.at<float>(3, 3) = 1;
+      Cone *cone = new Cone(trans, rho_ad, rho_ad, rho_s);
+      cone->name = "Nose";
+      // Rotate
+      Mat rot = Mat::eye(4, 4, CV_32FC1);
+      rot.at<float>(0, 0) = rot.at<float>(2,2) = cos(PI / 2);
+      rot.at<float>(0, 2) = sin(PI / 2);
+      rot.at<float>(2, 0) = -sin(PI / 2);
+      cone->transformBy(rot);
+      // Translate
+      Mat transl = Mat::eye(4, 4, CV_32FC1);
+      transl.at<float>(0, 3) = (0.3 + 0.14) * scale;
+      transl.at<float>(2, 3) = (1.7 - 0.03) * scale;
+      cone->transformBy(transl);
+      objects.emplace_back(cone);
+    }
+  }
+
+  // Build Hat
+  {
+    Scalar rho_ad(0.1, 0.1, 0.1), rho_s(0.35, 0.35, 0.35);
+    // Barrel
+    {
+      // Force transform to go out of scope
+      Mat trans = Mat::eye(4, 4, CV_32FC1);
+      trans.at<float>(0, 0) = 0.38 / 2 * scale;
+      trans.at<float>(1, 1) = 0.38 / 2 * scale;
+      trans.at<float>(2, 2) = 0.35 / 2 * scale;
+      trans.at<float>(2, 3) = (0.35) * scale; // Penetrate head a bit
+      Cylinder *cylinder = new Cylinder(trans, rho_ad, rho_ad, rho_s);
+      cylinder->name = "Hat Barrel";
+      Mat rot = Mat::eye(4, 4, CV_32FC1);
+      rot.at<float>(0, 0) = rot.at<float>(2, 2) = cos(15 * PI / 180);
+      rot.at<float>(0, 2) = -sin(15 * PI / 180);
+      rot.at<float>(2, 0) = sin(15 * PI / 180);
+      cylinder->transformBy(rot);
+      Mat transl = Mat::eye(4, 4, CV_32FC1);
+      transl.at<float>(2, 3) = 1.7 * scale;
+      cylinder->transformBy(transl);
+      objects.emplace_back(cylinder);
+    }
+    // Rim
+    {
+      // Force transform to go out of scope
+      Mat trans = Mat::eye(4, 4, CV_32FC1);
+      trans.at<float>(0, 0) = 0.65 / 2 * scale;
+      trans.at<float>(1, 1) = 0.65 / 2 * scale;
+      trans.at<float>(2, 2) = 0.01 / 2 * scale;
+      trans.at<float>(2, 3) = (0.25) * scale; // Penetrate head a bit
+      Cylinder *cylinder = new Cylinder(trans, rho_ad, rho_ad, rho_s);
+      cylinder->name = "Hat Rim";
+      Mat rot = Mat::eye(4, 4, CV_32FC1);
+      rot.at<float>(0, 0) = rot.at<float>(2, 2) = cos(15 * PI / 180);
+      rot.at<float>(0, 2) = -sin(15 * PI / 180);
+      rot.at<float>(2, 0) = sin(15 * PI / 180);
+      cylinder->transformBy(rot);
+      Mat transl = Mat::eye(4, 4, CV_32FC1);
+      transl.at<float>(2, 3) = 1.7 * scale;
+      cylinder->transformBy(transl);
+      objects.emplace_back(cylinder);
+    }
+  }
+
+  // Build Arms
+  {
+    Scalar rho_ad((float)19/255, (float)69/255, (float)139/255), rho_s(0.1, 0.1, 0.1);
+    // Right Arm
+    {
+      // Force transform to go out of scope
+      Mat trans = Mat::eye(4, 4, CV_32FC1);
+      trans.at<float>(0, 0) = 0.03 / 2 * scale;
+      trans.at<float>(1, 1) = 0.03 / 2 * scale;
+      trans.at<float>(2, 2) = 0.5 * scale;
+      Cylinder *cylinder = new Cylinder(trans, rho_ad, rho_ad, rho_s);
+      cylinder->name = "Right Arm";
+      Mat rot = Mat::eye(4, 4, CV_32FC1);
+      rot.at<float>(1, 1) = rot.at<float>(2, 2) = cos(70 * PI / 180);
+      rot.at<float>(1, 2) = -sin(70 * PI / 180);
+      rot.at<float>(2, 1) = sin(70 * PI / 180);
+      cylinder->transformBy(rot);
+      Mat transl = Mat::eye(4, 4, CV_32FC1);
+      transl.at<float>(1, 3) = -0.6 * scale;
+      transl.at<float>(2, 3) = 1.4 * scale;
+      cylinder->transformBy(transl);
+      rot = Mat::eye(4, 4, CV_32FC1);
+      rot.at<float>(0, 0) = rot.at<float>(1, 1) = cos(30 * PI / 180);
+      rot.at<float>(0, 1) = -sin(30 * PI / 180);
+      rot.at<float>(1, 0) = sin(30 * PI / 180);
+      cylinder->transformBy(rot);
+      objects.emplace_back(cylinder);
+    }
+    // Left Arm
+    {
+      // Force transform to go out of scope
+      Mat trans = Mat::eye(4, 4, CV_32FC1);
+      trans.at<float>(0, 0) = 0.03 / 2 * scale;
+      trans.at<float>(1, 1) = 0.03 / 2 * scale;
+      trans.at<float>(2, 2) = 0.5 / 2 * scale;
+      Cylinder *cylinder = new Cylinder(trans, rho_ad, rho_ad, rho_s);
+      cylinder->name = "Left Arm";
+      Mat rot = Mat::eye(4, 4, CV_32FC1);
+      rot.at<float>(1, 1) = rot.at<float>(2, 2) = cos(-70 * PI / 180);
+      rot.at<float>(1, 2) = -sin(-70 * PI / 180);
+      rot.at<float>(2, 1) = sin(-70 * PI / 180);
+      cylinder->transformBy(rot);
+      Mat transl = Mat::eye(4, 4, CV_32FC1);
+      transl.at<float>(1, 3) = 0.6 * scale;
+      transl.at<float>(2, 3) = 1.4 * scale;
+      cylinder->transformBy(transl);
+      rot = Mat::eye(4, 4, CV_32FC1);
+      rot.at<float>(0, 0) = rot.at<float>(1, 1) = cos(-30 * PI / 180);
+      rot.at<float>(0, 1) = -sin(-30 * PI / 180);
+      rot.at<float>(1, 0) = sin(-30 * PI / 180);
+      cylinder->transformBy(rot);
+      objects.emplace_back(cylinder);
+    }
+  }
+
+  // Get the last index
+  int endIdx = objects.size();
+  Mat trans = Mat::eye(4, 4, CV_32FC1);
+  trans.at<float>(0, 3) = 0.5;
+  trans.at<float>(1, 3) = 0.5;
+  Mat rot = Mat::eye(4, 4, CV_32FC1);
+  rot.at<float>(0, 0) = rot.at<float>(1, 1) = cos(35 * PI / 180);
+  rot.at<float>(0, 1) = -sin(35 * PI / 180);
+  rot.at<float>(1, 0) = sin(35 * PI / 180);
+  for (int i = startIdx; i < endIdx; i++){
+    objects[i]->transformBy(rot);
+    objects[i]->transformBy(trans);
+  }
 }
