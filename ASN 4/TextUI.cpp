@@ -1,7 +1,7 @@
 /*
   TextUI.cpp
 
-  CS3388 Assignment 3
+  CS3388 Assignment 4
 
   By: Andrew Simpson
   SN: 250 633 280
@@ -97,6 +97,7 @@ bool TextUI::addLight(std::vector<Light> &lights){
   //}
   Light light;
   light.name = name;
+  light.centre = cv::Mat::ones(4, 1, CV_32FC1);
   light.centre.at<float>(0) = co[0];
   light.centre.at<float>(1) = co[1];
   light.centre.at<float>(2) = co[2];
@@ -133,7 +134,7 @@ bool TextUI::removeLight(std::vector<Light> &lights){
 }
 
 bool TextUI::addObject(std::vector<GenericObject*> &objects){
-  std::cout << "Would you like to create a plane (p/P) or sphere (s/S)?\n";
+  std::cout << "Would you like to create a plane (p/P), sphere (s/S), cylinder (c/C), or cone (o/O)?\n";
   char c;
   if (!InputParser::getChar(c))
     return false;

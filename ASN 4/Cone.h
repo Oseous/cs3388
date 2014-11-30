@@ -1,60 +1,60 @@
 /*
-  Cylinder.h
+  Cone.h
 
-  CS3388 Assignment 3
+  CS3388 Assignment 4
 
   By: Andrew Simpson
   SN: 250 633 280
   EM: asimps53@uwo.ca
 
-  Cylinder is an implementation of the GenericObject super class.
-  Obviously, it's a cylinder.
+  Cone is an implementation of the GenericObject super class.
+  Obviously, it's a cone.
   This class implements the specific intersect and normal functions
-  for a cylinder, and also adds its own constructor to allow cylinders
+  for a cone, and also adds its own constructor to allow cones
   to be created easily.
 */
 
-#ifndef _CYLINDER_H
-#define _CYLINDER_H
+#ifndef _CONE_H
+#define _CONE_H
 
 #include "GenericObject.h"
 
-class Cylinder : public GenericObject{
+class Cone : public GenericObject{
 private:
 
 public:
   /*
-    Cylinder()
+    Cone()
 
-    Default constructor for cylinder.
-    Creates a gray cylinder with radius 1 centred at
+    Default constructor for cone.
+    Creates a gray cone with radius 1 centred at
     the origin.
   */
-  Cylinder();
+  Cone();
 
   /*
-    Cylinder(...)
+    Cone(...)
 
-    An extra constructor for cylinder that allows any
-    specific cylinder to be initialized easily.
+    An extra constructor for cone that allows any
+    specific cone to be initialized easily.
 
     Args:
       cv::Mat trans:
-        The transform to apply to the cylinder.
+        The transform to apply to the cone.
       cv::Scalar rho_a, rho_d, rho_d:
         The ambient, diffuse, and specular lighting
-        factors of the new cylinder.
+        factors of the new cone.
   */
-  Cylinder(cv::Mat trans, cv::Scalar rho_a, cv::Scalar rho_d, cv::Scalar rho_s);
+  Cone(cv::Mat trans, cv::Scalar rho_a, cv::Scalar rho_d, cv::Scalar rho_s);
 
   /*
-    ~Cylinder()
+    ~Cone()
 
-    The default cylinder destructor.
+    The default cone destructor.
     There is nothing to do on deletion, so the
     destructor has an empty body.
   */
-  ~Cylinder();
+  ~Cone();
 
   /*
     intersect(...)
@@ -66,13 +66,13 @@ public:
     args:
       cv::Mat e:
         The starting point of the ray.
-    cv::Mat d:
-      The direction vector of the ray.
-    float &dist:
-      The distance to the intersection.
-      Actually used as a return value, the initial
-      value is overwritten if an intersection is
-      found.
+      cv::Mat d:
+        The direction vector of the ray.
+        float &dist:
+        The distance to the intersection.
+        Actually used as a return value, the initial
+        value is overwritten if an intersection is
+        found.
 
     return:
       bool:
@@ -85,9 +85,9 @@ public:
     normal(...)
 
     Finds and returns the surface normal to the
-    cylinder at the provided point.
+    cone at the provided point.
     Note that the function DOES NOT verify that the
-    point is actually on the cylinder.
+    point is actually on the cone.
 
     args:
       cv::Mat point
@@ -95,7 +95,7 @@ public:
 
     return:
       cv::Mat:
-        The normal vector to the cylinder at the
+        The normal vector to the cone at the
         point.
   */
   cv::Mat normal(cv::Mat point);

@@ -1,7 +1,7 @@
 /*
   RayTracer.cpp
 
-  CS3388 Assignment 3
+  CS3388 Assignment 4
 
   By: Andrew Simpson
   SN: 250 633 280
@@ -27,7 +27,7 @@ void RayTracer::traceImage(cv::Mat &renderImage, float W, float H, float N,
       // Trace ray for row r, column c
       float u = -W + W*((float)2 * c) / renderImage.cols;
       float v = -H + H*((float)2 * r) / renderImage.rows;
-      if (r == 0 && c == 243){
+      if (r == 235 && c == 312){
         c = c;
       }
       // Negate v to turn image right way up

@@ -27,6 +27,7 @@
 #include "Sphere.h"
 #include "Plane.h"
 #include "Cylinder.h"
+#include "Cone.h"
 
 #include "Camera.h"
 #include "RenderUtils.h"
@@ -36,8 +37,8 @@
 #include "TextUI.h"
 
 #define PI ((float)3.14159265358979323846)
-#define WIDTH (640)
-#define HEIGHT (480)
+#define WIDTH (640/2)
+#define HEIGHT (480/2)
 #define VIEWING_ANGLE (float)45.0
 #define N 5.0
 //#define F 25.0f
@@ -48,10 +49,10 @@ using namespace cv;
 #define DEBUG
 
 // Just initializes all of the objects to the desired default scene
-void setupDefaultScene(vector<GenericObject*> &objects, Camera &cam, Scalar &backColour, vector<Light> &lights, Light ambientLight);
+void setupDefaultScene(vector<GenericObject*> &objects, Camera &cam, Scalar &backColour, vector<Light> &lights, Light &ambientLight);
 
 // Initializes the second default scene. Shifts existing objects. Adds a sun light.
-void setupScene2(vector<GenericObject*> &objects, Camera &cam, Scalar &backColour, vector<Light> &lights, Light ambientLight);
+void setupScene2(vector<GenericObject*> &objects, Camera &cam, Scalar &backColour, vector<Light> &lights, Light &ambientLight);
 
 int main(int argc, char **argv)
 {
@@ -172,12 +173,12 @@ int main(int argc, char **argv)
         break;
       case 'r':
         //Zoom in
-        cam.e = cam.e - 0.5*cam.n;
+        cam.e = cam.e - 0.8*cam.n;
         cam.e.at<float>(3) = 1;
         break;
       case 'f':
         //Zoom out
-        cam.e = cam.e + 4.0*cam.n;
+        cam.e = cam.e + 0.8*cam.n;
         cam.e.at<float>(3) = 1;
         break;
       case 'k':
@@ -227,7 +228,7 @@ int main(int argc, char **argv)
 }
 
 void setupDefaultScene(vector<GenericObject*> &objects, Camera &cam, Scalar &backColour, 
-    vector<Light> &lights, Light ambientLight){
+    vector<Light> &lights, Light &ambientLight){
   // Setup objects
   // Insert the default objects
   Scalar rho_ad(0.25, 0.25, 0.5), rho_s(0.333, 0.333, 0.333);
@@ -320,7 +321,7 @@ void setupDefaultScene(vector<GenericObject*> &objects, Camera &cam, Scalar &bac
 }
 
 void setupScene2(vector<GenericObject*> &objects, Camera &cam, Scalar &backColour,
-    vector<Light> &lights, Light ambientLight){
+    vector<Light> &lights, Light &ambientLight){
   // Shift all objects
   Mat shiftTrans = Mat::eye(4, 4, CV_32FC1); // Do not scale!
   shiftTrans.at<float>(0, 3) = -5; // Move back 5 along X
@@ -333,17 +334,15 @@ void setupScene2(vector<GenericObject*> &objects, Camera &cam, Scalar &backColou
   light.centre = Mat::ones(4, 1, CV_32FC1);
   light.centre.at<float>(0) = 0;
   light.centre.at<float>(1) = 0;
-  light.centre = light.centre * 300; // Just put it really far away to fake parallel lighting
+  light.centre = light.centre * 200; // Just put it really far away to fake parallel lighting
   light.centre.at<float>(3) = 1; // Point
   light.intensity = Scalar(0.75, 0.75, 0.75); // Fairly bright white
   light.name = "Scene2: 'sun' light";
   lights.emplace_back(light);
 
-  //Add a black cylinder
-  Scalar rho_ad(0.75, 0.75, 0.75), rho_s(0.333, 0.333, 0.333);
+  // Add a black cylinder
+  Scalar rho_ad(0.15, 0.15, 0.15), rho_s(0.1, 0.1, 0.1);
   cv::Mat trans = cv::Mat::eye(4, 4, CV_32FC1);
-  rho_ad = Scalar(0.5, 0.25, 0.25);
-  rho_s = Scalar(0.45, 0.25, 0.25);
   trans = trans*0.25; // Scale down
   trans.at<float>(0, 0) = 0.2f;
   trans.at<float>(1, 1) = 0.2f;
@@ -351,5 +350,35 @@ void setupScene2(vector<GenericObject*> &objects, Camera &cam, Scalar &backColou
   trans.at<float>(2, 3) = 1.5f;
   trans.at<float>(3, 3) = 1.0f;
   Cylinder *cylinder = new Cylinder(trans, rho_ad, rho_ad, rho_s);
+  cylinder->name = "Black cylinder";
   objects.emplace_back(cylinder);
+
+  // Move the cylinder over on the y-axis
+  shiftTrans.at<float>(0, 3) = 0; // Move back 5 along X
+  shiftTrans.at<float>(1, 3) = -5; // Move back 5 along Y
+  cylinder->transformBy(shiftTrans);
+
+  // Rotate the cone about its x axis
+  Mat rotTrans = Mat::eye(4, 4, CV_32FC1);
+  rotTrans.at<float>(1, 1) = cos(PI / 4);
+  rotTrans.at<float>(1, 2) = -sin(PI / 4);
+  rotTrans.at<float>(2, 1) = sin(PI / 4);
+  rotTrans.at<float>(2, 2) = cos(PI / 4);
+
+  // Scale before rotation
+  trans = Mat::eye(4, 4, CV_32FC1);
+  trans.at<float>(0, 0) = 0.2f;
+  trans.at<float>(1, 1) = 0.2f;
+  trans.at<float>(2, 2) = 0.75f;
+  trans = rotTrans*trans;
+
+  // Then shift up
+  trans.at<float>(2, 3) = 1.5f;
+
+  // Put a purple cone in the middle
+  rho_ad = Scalar(0.45, 0.1, 0.45);
+  rho_s = Scalar(0.3333, 0.3333, 0.3333);
+  Cone *cone = new Cone(trans, rho_ad, rho_ad, rho_s);
+  cone->name = "Purple cone";
+  objects.emplace_back(cone);
 }
