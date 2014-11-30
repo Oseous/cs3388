@@ -21,9 +21,10 @@ This consists of two programs:
 ASN 3
 -----
 Implements a simple non-recursive ray tracer.  Can only trace planes and spheres.  Planes must be z=0 (so, you can only really have one plane. May only have one point light.
-Issue: The way I've handled transforms and intersections in this program is incorrect.  I manually calculate the intersection insead of using the inverse of the object's transform matrix.
+The issue with applying transforms to objects has been fixed.
 
 ASN 4
 -----
 An extension of ASN 3.
-Under development.
+Implements two new basic shapes, cylinders and cone, and adds a new light source - sun lights.
+Added a function to build a scene with a snowman.
