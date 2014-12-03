@@ -27,9 +27,12 @@ void RayTracer::traceImage(cv::Mat &renderImage, float W, float H, float N,
       // Trace ray for row r, column c
       float u = -W + W*((float)2 * c) / renderImage.cols;
       float v = -H + H*((float)2 * r) / renderImage.rows;
-      if (r == 235 && c == 312){
-        c = c;
-      }
+      // Debugging trick...
+      // Use image watch to find a bad pixel, then this
+      // to stop at it, then debug that pixel.
+      //if (r == 235 && c == 312){
+      //  c = c;
+      //}
       // Negate v to turn image right way up
       v = -v;
       // Trace a ray

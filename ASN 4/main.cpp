@@ -41,8 +41,8 @@
 #include "TextUI.h"
 
 #define PI ((float)3.14159265358979323846)
-#define WIDTH (640)
-#define HEIGHT (480)
+#define WIDTH (640/1) // Adjust this to speed up rendering for debugging
+#define HEIGHT (480/1)
 #define VIEWING_ANGLE (float)45.0
 #define N 5.0
 //#define F 25.0f
@@ -210,6 +210,16 @@ int main(int argc, char **argv)
       case 'm':
         //Delete an object
         TextUI::removeObject(objects);
+        TextUI::displayMenu();
+        break;
+      case 't':
+        //Transform an object
+        TextUI::transformObject(objects);
+        TextUI::displayMenu();
+        break;
+      case 'g':
+        //Adjust ambient lighting
+        TextUI::adjustAmbient(ambientLight);
         TextUI::displayMenu();
         break;
       case ' ':

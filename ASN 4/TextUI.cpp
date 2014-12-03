@@ -23,6 +23,8 @@
 
 #include "Plane.h"
 #include "Sphere.h"
+#include "Cylinder.h"
+#include "Cone.h"
 
 #include "GenericLight.h"
 #include "PointLight.h"
@@ -49,6 +51,8 @@ void TextUI::displayMenu(){
     "   l   - Delete light\n" <<
     "   n   - Insert new object\n" <<
     "   m   - Delete object\n" <<
+    "   t   - Transform object\n" <<
+    "   g   - Adjust ambient\n" <<
     " SPACE - Render next frame\n" <<
     " q/ESC - Quit\n" <<
     "============================\n";
@@ -76,6 +80,7 @@ bool TextUI::addLight(std::vector<GenericLight*> &lights){
   if (!InputParser::getChar(c))
     return false;
   if (!(c == 'p' || c == 'P' || c == 's' || c == 'S'))
+    return false;
   // Make a light
   std::cout << "What do you want to call the light?\n";
   std::string name;
@@ -151,7 +156,7 @@ bool TextUI::removeLight(std::vector<GenericLight*> &lights){
     std::cout << "   " << i << " - " << lights[i]->name << std::endl;
   }
   std::cout << "******************************\n"
-    << "Which object would you like to delete?\n";
+    << "Which light would you like to delete?\n";
   int idx;
   if (!InputParser::getInt(idx))
     return false;
@@ -163,6 +168,17 @@ bool TextUI::removeLight(std::vector<GenericLight*> &lights){
   // Delete the pointer
   lights.erase(lights.begin() + idx);
 
+  return true;
+}
+
+bool TextUI::adjustAmbient(PointLight &ambientLight){
+  std::cout << "Please enter the new light coefficients of the ambient light:";
+  float in[3];
+  for (int i = 0; i < 3; i++){
+    if (!InputParser::getFloat(in[i]))
+      return false;
+    ambientLight.intensity[i] = in[i];
+  }
   return true;
 }
 
@@ -238,6 +254,96 @@ bool TextUI::addObject(std::vector<GenericObject*> &objects){
     // Return success
     return true;
   }
+  else if (c == 'C' || c == 'c')
+  {
+    // Make a cylinder
+    std::cout << "What do you want to call the cylinder?\n";
+    std::string name;
+    if (!InputParser::getString(name))
+      return false;
+    std::cout << "Please enter the coordinates (x,y,z) of the centre of the cylinder one at a time:\n";
+    float coord[3];
+    if (!(InputParser::getFloat(coord[0]) && InputParser::getFloat(coord[1]) &&
+      InputParser::getFloat(coord[2])))
+      return false;
+    std::cout << "Please enter the radius of the cylinder:\n";
+    float rad;
+    if (!InputParser::getFloat(rad))
+      return false;
+    std::cout << "Please enter the length of the cylinder:\n";
+    float len;
+    if (!InputParser::getFloat(len))
+      return false;
+    std::cout << "Please enter the rho_a, rho_d, and rho_s (B,G,R) coefficients one at a time:\n";
+    float co[9];
+    for (int i = 0; i < 9; i++)
+    {
+      if (!InputParser::getFloat(co[i]))
+        return false;
+    }
+    // Make the plane
+    cv::Mat trans = cv::Mat::eye(4, 4, CV_32FC1);
+    trans.at<float>(0, 0) = rad;
+    trans.at<float>(1, 1) = rad;
+    trans.at<float>(2, 2) = len;
+    trans.at<float>(0, 3) = coord[0];
+    trans.at<float>(1, 3) = coord[1];
+    trans.at<float>(2, 3) = coord[2];
+    cv::Scalar rho_a(co[0], co[1], co[2]), rho_d(co[3], co[4], co[5]), rho_s(co[6], co[7], co[8]);
+    Cylinder *newCylinder = new Cylinder(trans, rho_a, rho_d, rho_s);
+    newCylinder->name = name;
+
+    // Add to the list of objects
+    objects.push_back(newCylinder);
+
+    // Return success
+    return true;
+  }
+  else if (c == 'O' || c == 'o')
+  {
+    // Make a cone
+    std::cout << "What do you want to call the cone?\n";
+    std::string name;
+    if (!InputParser::getString(name))
+      return false;
+    std::cout << "Please enter the coordinates (x,y,z) of the centre of the cone one at a time:\n";
+    float coord[3];
+    if (!(InputParser::getFloat(coord[0]) && InputParser::getFloat(coord[1]) &&
+      InputParser::getFloat(coord[2])))
+      return false;
+    std::cout << "Please enter the radius of the cone:\n";
+    float rad;
+    if (!InputParser::getFloat(rad))
+      return false;
+    std::cout << "Please enter the length of the cone:\n";
+    float len;
+    if (!InputParser::getFloat(len))
+      return false;
+    std::cout << "Please enter the rho_a, rho_d, and rho_s (B,G,R) coefficients one at a time:\n";
+    float co[9];
+    for (int i = 0; i < 9; i++)
+    {
+      if (!InputParser::getFloat(co[i]))
+        return false;
+    }
+    // Make the plane
+    cv::Mat trans = cv::Mat::eye(4, 4, CV_32FC1);
+    trans.at<float>(0, 0) = rad;
+    trans.at<float>(1, 1) = rad;
+    trans.at<float>(2, 2) = len;
+    trans.at<float>(0, 3) = coord[0];
+    trans.at<float>(1, 3) = coord[1];
+    trans.at<float>(2, 3) = coord[2];
+    cv::Scalar rho_a(co[0], co[1], co[2]), rho_d(co[3], co[4], co[5]), rho_s(co[6], co[7], co[8]);
+    Cylinder *newCylinder = new Cylinder(trans, rho_a, rho_d, rho_s);
+    newCylinder->name = name;
+
+    // Add to the list of objects
+    objects.push_back(newCylinder);
+
+    // Return success
+    return true;
+  }
   
   // Char must not have matched an option
   return false;
@@ -267,6 +373,53 @@ bool TextUI::removeObject(std::vector<GenericObject*> &objects)
   objects.erase(objects.begin() + idx);
 
   return true;
+}
+
+bool TextUI::transformObject(std::vector<GenericObject*> &objects)
+{
+  // List all objects:
+  std::cout
+    << "******************************\n"
+    << " Objects:\n"
+    << "------------------------------\n";
+  for (int i = 0; i < objects.size(); i++)
+  {
+    std::cout << "   " << i << " - " << objects[i]->name << std::endl;
+  }
+  std::cout << "******************************\n"
+    << "Which object would you like to transform?\n";
+  int idx;
+  if (!InputParser::getInt(idx))
+    return false;
+  if (0 > idx || idx >= objects.size())
+    return false;
+  std::cout << "Would you like to Set or Apply a transform (s/S or a/A)?\n";
+  char c;
+  if (!InputParser::getChar(c))
+    return false;
+  // Get the transform matrix.
+  std::cout << "Please enter the first 3 rows of the 4x4 transformation matrix.";
+  float in[12];
+  for (int i = 0; i < 12; i++){
+    if (!InputParser::getFloat(in[i]))
+      return false;
+  }
+  // Put into Mat
+  cv::Mat trans = cv::Mat::eye(4, 4, CV_32FC1);
+  for (int j = 0; j < 3; j++){
+    for (int i = 0; i < 4; i++){
+      trans.at<float>(j, i) = in[i + j * 4];
+    }
+  }
+  if (c == 'a' || c == 'A'){
+    objects[idx]->transformBy(trans);
+    return true;
+  }
+  if (c == 's' || c == 'S'){
+    objects[idx]->transformSet(trans);
+    return true;
+  }
+  return false;
 }
 
 bool TextUI::snowManPrompt()

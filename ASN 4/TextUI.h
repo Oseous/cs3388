@@ -18,6 +18,7 @@
 
 #include "GenericObject.h"
 #include "GenericLight.h"
+#include "PointLight.h"
 
 class TextUI{
 private:
@@ -114,6 +115,21 @@ public:
   static bool removeLight(std::vector<GenericLight*> &lights);
 
   /*
+    adjustAmbient(...)
+
+    A routine that allows the user to adjust the ambient light.
+
+    args:
+      PointLight &ambientLight:
+        A reference to the scene's ambient light.
+
+    return:
+      bool:
+        Whether a result was parsed or not.
+  */
+  static bool adjustAmbient(PointLight &ambientLight);
+
+  /*
     addObject(...)
 
     Adds a new object to the scene.
@@ -148,6 +164,24 @@ public:
         Whether insertion of a new object was successful.
   */
   static bool removeObject(std::vector<GenericObject*> &objects);
+
+  /*
+    transformLight(...)
+
+    Allows the user to transform an object.
+    DOES NOT verify that the transform is legal.
+    Note that this really only includes rotation and translation.
+    Can SET the transform, or APPLY a transform.
+
+    args:
+      std::vector<GenericObject*> &objects:
+        A reference to the list of pointers of objects in the scene.
+
+    return:
+      bool:
+        Whether a transform was parsed.
+  */
+  static bool transformObject(std::vector<GenericObject*> &objects);
 
   /*
   snowManPrompt()
