@@ -28,3 +28,4 @@ ASN 4
 An extension of ASN 3.
 Implements two new basic shapes, cylinders and cone, and adds a new light source - sun lights.
 Added a function to build a scene with a snowman.
+Prompts the user to ask if they want a snowman at startup.
